@@ -1,9 +1,12 @@
 import express from "express";
 import mysql from "mysql2/promise";
+import cors from "cors";
+
 
 const app = express();
-const port = 4000;
+app.use(cors());
 
+const port = 4000;
 const pool = mysql.createPool({
     host: "localhost",
     user: "root",
@@ -14,7 +17,7 @@ const pool = mysql.createPool({
     queueLimit: 0,
   });
 
-app.get('/user', async (req, res) => {
+app.get('/test1', async (req, res) => {
   const [rows] = await pool.query(
     `
   SELECT *
