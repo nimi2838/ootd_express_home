@@ -28,13 +28,47 @@ app.get("/test1", async (req, res) => {
   res.json(rows);
 });
 
+app.get("/test1/login", async (req, res) => {
+  const {
+    body: { id, pw },
+  } = req;
+
+  const [rows] = await pool.query(
+    `
+  SELECT *
+  FROM user 
+  WHERE id = ?
+  AND
+  pw = ?
+  `,
+    [id, pw]
+  );
+
+  // {
+  //   rows ? res.json(true) : res.json(false);
+  // }
+
+  if (rows.length === 0) {
+    res.json(false);
+  } else if (rows.length !== 0) {
+    res.json(true);
+  }
+
+  // res.json(rows);
+
+  // if (res.json) {
+  //   res.json(true);
+  // } else if (!res.json) {
+  //   res.json(false);
+  // }
+});
+
 app.post("/test1", async (req, res) => {
   const {
     body: { id, pw, name },
   } = req;
 
   // console.log(id, pw, name);
-
   // const { text } = req.body;
 
   const [row] = await pool.query(
@@ -51,15 +85,9 @@ app.post("/test1", async (req, res) => {
     SELECT *
     FROM user
     `);
+
   res.json(rows);
 });
-
-// app.post('/user', async (req, res) => {
-//   await pool.query(
-//     `
-//     `
-//   )
-// })
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
