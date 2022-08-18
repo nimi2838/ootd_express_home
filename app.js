@@ -4,6 +4,7 @@ import cors from "cors";
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 const port = 4000;
 const pool = mysql.createPool({
@@ -31,22 +32,26 @@ app.post("/test1", async (req, res) => {
   const {
     body: { id, pw, name },
   } = req;
-  console.log(id, pw, name);
 
-  await pool.query(
+  // console.log(id, pw, name);
+
+  // const { text } = req.body;
+
+  const [row] = await pool.query(
     `
     INSERT INTO user
-    SET id = ?, pw = ?, name =?
-    `
+    SET id = ?,
+    pw = ?,
+    name = ?
+    `,
+    [id, pw, name]
   );
-  // const [rows] = await pool.query(
-  //   `
-  // SELECT *
-  // FROM user
-  // `
-  // );
 
-  // res.json(rows);
+  const [rows] = await pool.query(`
+    SELECT *
+    FROM user
+    `);
+  res.json(rows);
 });
 
 // app.post('/user', async (req, res) => {
