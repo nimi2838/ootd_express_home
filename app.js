@@ -1,10 +1,12 @@
 import express from "express";
 import mysql from "mysql2/promise";
 import cors from "cors";
+import bodyParser from "body-parser";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = 4000;
 const pool = mysql.createPool({
@@ -28,39 +30,56 @@ app.get("/test1", async (req, res) => {
   res.json(rows);
 });
 
-app.get("/test1/login", async (req, res) => {
+app.post("/test1/doLogin", async (req, res) => {
   const {
     body: { id, pw },
   } = req;
 
-  const [rows] = await pool.query(
+  const [[userRow]] = await pool.query(
     `
   SELECT *
-  FROM user 
+  FROM user
   WHERE id = ?
   AND
   pw = ?
   `,
     [id, pw]
   );
-
-  // {
-  //   rows ? res.json(true) : res.json(false);
-  // }
-
-  if (rows.length === 0) {
-    res.json(false);
-  } else if (rows.length !== 0) {
-    res.json(true);
+  // console.log(userRow);
+  if (userRow) {
+    return res.send(true);
   }
+  res.send(false);
+});
 
+app.get("/test1/login", async (req, res) => {
+  console.log(req.body);
+  // const [rows] = await pool.query(
+  //   `
+  // SELECT *
+  // FROM user
+  // WHERE id = ?
+  // AND
+  // pw = ?
+  // `,
+  //   [id, pw]
+  // );
+  // // {
+  // //   rows ? res.json(true) : res.json(false);
+  // // }
+  // console.log(rows);
+  // if (rows.length === 0) {
+  //   res.json(false);
+  // } else if (rows.length !== 0) {
+  //   res.json(true);
+  // }
   // res.json(rows);
-
   // if (res.json) {
   //   res.json(true);
   // } else if (!res.json) {
   //   res.json(false);
   // }
+  res.send("login");
 });
 
 app.post("/test1", async (req, res) => {
