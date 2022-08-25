@@ -30,6 +30,16 @@ app.get("/test1", async (req, res) => {
   res.json(rows);
 });
 
+app.get("/test2", async (req, res) => {
+  const [rows] = await pool.query(
+    `
+    SELECT * FROM product
+  `
+  );
+
+  res.json(rows);
+});
+
 app.post("/test1/doLogin", async (req, res) => {
   const {
     body: { id, pw },
@@ -45,7 +55,7 @@ app.post("/test1/doLogin", async (req, res) => {
   `,
     [id, pw]
   );
-  // console.log(userRow);
+  console.log(userRow);
   if (userRow) {
     return res.send(true);
   }
