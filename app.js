@@ -62,36 +62,6 @@ app.post("/test1/doLogin", async (req, res) => {
   res.send(false);
 });
 
-app.get("/test1/login", async (req, res) => {
-  console.log(req.body);
-  // const [rows] = await pool.query(
-  //   `
-  // SELECT *
-  // FROM user
-  // WHERE id = ?
-  // AND
-  // pw = ?
-  // `,
-  //   [id, pw]
-  // );
-  // // {
-  // //   rows ? res.json(true) : res.json(false);
-  // // }
-  // console.log(rows);
-  // if (rows.length === 0) {
-  //   res.json(false);
-  // } else if (rows.length !== 0) {
-  //   res.json(true);
-  // }
-  // res.json(rows);
-  // if (res.json) {
-  //   res.json(true);
-  // } else if (!res.json) {
-  //   res.json(false);
-  // }
-  res.send("login");
-});
-
 app.post("/test1", async (req, res) => {
   const {
     body: { id, pw, name },
@@ -116,6 +86,26 @@ app.post("/test1", async (req, res) => {
     `);
 
   res.json(rows);
+});
+
+app.post("/product", async (req, res) => {
+  const {
+    body: { prdId },
+  } = req;
+  console.log("prdId", prdId);
+
+  const [[prdRow]] = await pool.query(
+    `
+  SELECT *
+  FROM product
+  WHERE prdId = ?
+  `,
+    [prdId]
+  );
+  // console.log("prdRow", prdRow);
+
+  res.json(prdRow);
+  // res.send([prdRow]);
 });
 
 app.listen(port, () => {
