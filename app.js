@@ -88,6 +88,29 @@ app.post("/test1", async (req, res) => {
   res.json(rows);
 });
 
+app.post("/prdlist", async (req, res) => {
+  const {
+    body: { prdno },
+  } = req;
+  // console.log("prdno", prdno);
+  var like = "%" + prdno + "%";
+  console.log("like", like);
+
+  const [prdRow] = await pool.query(
+    `
+    SELECT *
+    FROM product 
+    WHERE category LIKE ?;
+  `,
+    [like]
+  );
+  // console.log("prdRow", prdRow);
+
+  res.json(prdRow);
+  console.log(prdRow);
+  // res.send([prdRow]);
+});
+
 app.post("/product", async (req, res) => {
   const {
     body: { prdId },
