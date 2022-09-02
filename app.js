@@ -104,11 +104,9 @@ app.post("/prdlist", async (req, res) => {
   `,
     [like]
   );
-  // console.log("prdRow", prdRow);
 
   res.json(prdRow);
   console.log(prdRow);
-  // res.send([prdRow]);
 });
 
 app.post("/product", async (req, res) => {
@@ -125,10 +123,47 @@ app.post("/product", async (req, res) => {
   `,
     [prdId]
   );
-  // console.log("prdRow", prdRow);
 
   res.json(prdRow);
-  // res.send([prdRow]);
+});
+
+app.post("/cart", async (req, res) => {
+  const {
+    body: { prdId, userId },
+  } = req;
+
+  const [row] = await pool.query(
+    `
+    INSERT INTO cart (prdId, userId) VALUES (?,?);
+    
+    `,
+    [prdId, userId]
+  );
+});
+
+app.post("/cartlist", async (req, res) => {
+  const {
+    body: { userId },
+  } = req;
+
+  const [cartRow] = await pool.query(
+    `
+    SELECT *
+    FROM cart
+    WHERE userId = ?
+    `,
+    [userId]
+  );
+
+  const [[cartRow2]] = await pool.query(
+    `
+    SELECT *
+    FROM product
+    WHERE prdId = ?
+    `,
+    [cartRow.prdId]
+  );
+  res.json(cartRow);
 });
 
 app.listen(port, () => {
