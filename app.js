@@ -155,14 +155,35 @@ app.post("/cartlist", async (req, res) => {
     [userId]
   );
 
-  const [[cartRow2]] = await pool.query(
+  // for (let i = 0; i < cartRow.length; i++) {
+  //   const [cartRow2] = await pool.query(
+  //     `
+  //   SELECT *
+  //   FROM product
+  //   WHERE prdId = ?
+  //   `,
+  //     [cartRow[i].prdId]
+  //   );
+
+  //   console.log(cartRow);
+  // }
+  res.json(cartRow);
+});
+
+app.post("/testlist", async (req, res) => {
+  const {
+    body: { userId },
+  } = req;
+
+  const [cartRow] = await pool.query(
     `
     SELECT *
-    FROM product
-    WHERE prdId = ?
+    FROM cart
+    WHERE userId = ?
     `,
-    [cartRow.prdId]
+    [userId]
   );
+
   res.json(cartRow);
 });
 
