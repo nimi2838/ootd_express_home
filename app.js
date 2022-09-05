@@ -55,7 +55,7 @@ app.post("/test1/doLogin", async (req, res) => {
   `,
     [id, pw]
   );
-  console.log(userRow);
+  // console.log(userRow);
   if (userRow) {
     return res.send(true);
   }
@@ -94,7 +94,7 @@ app.post("/prdlist", async (req, res) => {
   } = req;
   // console.log("prdno", prdno);
   var like = "%" + prdno + "%";
-  console.log("like", like);
+  // console.log("like", like);
 
   const [prdRow] = await pool.query(
     `
@@ -106,14 +106,14 @@ app.post("/prdlist", async (req, res) => {
   );
 
   res.json(prdRow);
-  console.log(prdRow);
+  // console.log(prdRow);
 });
 
 app.post("/product", async (req, res) => {
   const {
     body: { prdId },
   } = req;
-  console.log("prdId", prdId);
+  // console.log("prdId", prdId);
 
   const [[prdRow]] = await pool.query(
     `
@@ -132,13 +132,30 @@ app.post("/cart", async (req, res) => {
     body: { prdId, userId },
   } = req;
 
-  const [row] = await pool.query(
+  const [duplicate] = await pool.query(
     `
-    INSERT INTO cart (prdId, userId) VALUES (?,?);
-    
+    SELECT *
+    FROM cart
+    WHERE prdId =? and userId = ?
     `,
     [prdId, userId]
   );
+
+  // console.log("duplicate", duplicate);
+
+  if (duplicate.length == 0) {
+    const [row] = await pool.query(
+      `
+    INSERT INTO cart (prdId, userId, checked ) VALUES (?,?, false);
+    
+    `,
+      [prdId, userId]
+    );
+  } else {
+    res.json({
+      msg: "같은 상품 존재",
+    });
+  }
 });
 
 app.post("/cartlist", async (req, res) => {
@@ -155,36 +172,48 @@ app.post("/cartlist", async (req, res) => {
     [userId]
   );
 
-  // for (let i = 0; i < cartRow.length; i++) {
-  //   const [cartRow2] = await pool.query(
-  //     `
-  //   SELECT *
-  //   FROM product
-  //   WHERE prdId = ?
-  //   `,
-  //     [cartRow[i].prdId]
-  //   );
-
-  //   console.log(cartRow);
-  // }
   res.json(cartRow);
 });
 
-app.post("/testlist", async (req, res) => {
+app.post("/cartList2", async (req, res) => {
   const {
-    body: { userId },
+    body: { prdId },
   } = req;
 
-  const [cartRow] = await pool.query(
+  // console.log("prdId", prdId);
+
+  const [[cartRow]] = await pool.query(
     `
     SELECT *
-    FROM cart
-    WHERE userId = ?
+    FROM product
+    WHERE prdId = ?
     `,
-    [userId]
+    [prdId]
   );
 
   res.json(cartRow);
+  // console.log("cartRow", cartRow);
+});
+
+app.patch("/check/:userId/:prdId", async (req, res) => {
+  const { userId, prdid } = req.params;
+  const [[rows]] = await pool.query(
+    `
+    SELECT *
+  FROM cart where userId = ? and prdId =?
+  `,
+    [userId, prdid]
+  );
+  await pool.query(
+    `
+  UPDATE cart
+  SET checked = ?
+  WHERE userId = ? and prdId =?
+  `,
+
+    [!rows.checked, userId, prdid]
+  );
+  res.send(userId);
 });
 
 app.listen(port, () => {
