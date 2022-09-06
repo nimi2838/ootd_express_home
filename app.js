@@ -146,7 +146,7 @@ app.post("/cart", async (req, res) => {
   if (duplicate.length == 0) {
     const [row] = await pool.query(
       `
-    INSERT INTO cart (prdId, userId, checked ) VALUES (?,?, false);
+    INSERT INTO cart (prdId, userId, checked,amount ) VALUES (?,?, false, 1);
     
     `,
       [prdId, userId]
@@ -175,6 +175,34 @@ app.post("/cartlist", async (req, res) => {
   res.json(cartRow);
 });
 
+app.patch("/amount/:prdId", async (req, res) => {
+  const { prdId } = req.params;
+  const { setCount } = req.body;
+  // const {
+  //   body: { setCount },
+  // } = req;
+
+  console.log("setCount", setCount);
+  console.log("prdId", prdId);
+
+  await pool.query(
+    `
+    UPDATE cart SET amount = ? WHERE prdId = ?
+  `,
+
+    [setCount, prdId]
+  );
+
+  const [cartRow] = await pool.query(
+    `
+    SELECT *
+    FROM cart
+    `
+  );
+
+  res.json(cartRow);
+});
+
 app.post("/cartList2", async (req, res) => {
   const {
     body: { prdId },
@@ -196,13 +224,17 @@ app.post("/cartList2", async (req, res) => {
 });
 
 app.patch("/check/:userId/:prdId", async (req, res) => {
-  const { userId, prdid } = req.params;
+  const { userId, prdId } = req.params;
+
+  console.log("userId", userId);
+
+  console.log("prdId", prdId);
   const [[rows]] = await pool.query(
     `
     SELECT *
-  FROM cart where userId = ? and prdId =?
+  FROM cart where userId = ? and prdId = ?
   `,
-    [userId, prdid]
+    [userId, prdId]
   );
   await pool.query(
     `
@@ -211,7 +243,7 @@ app.patch("/check/:userId/:prdId", async (req, res) => {
   WHERE userId = ? and prdId =?
   `,
 
-    [!rows.checked, userId, prdid]
+    [!rows.checked, userId, prdId]
   );
   res.send(userId);
 });
