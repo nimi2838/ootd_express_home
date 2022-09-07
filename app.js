@@ -177,10 +177,10 @@ app.post("/cartlist", async (req, res) => {
 
 app.patch("/amount/:prdId", async (req, res) => {
   const { prdId } = req.params;
-  const { setCount } = req.body;
-  // const {
-  //   body: { setCount },
-  // } = req;
+  // const { setCount } = req.body;
+  const {
+    body: { setCount },
+  } = req;
 
   console.log("setCount", setCount);
   console.log("prdId", prdId);
@@ -193,11 +193,13 @@ app.patch("/amount/:prdId", async (req, res) => {
     [setCount, prdId]
   );
 
-  const [cartRow] = await pool.query(
+  const [[cartRow]] = await pool.query(
     `
     SELECT *
     FROM cart
-    `
+    WHERE prdId = ?
+    `,
+    [prdId]
   );
 
   res.json(cartRow);
