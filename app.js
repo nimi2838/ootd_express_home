@@ -179,10 +179,11 @@ app.patch("/amount/:prdId", async (req, res) => {
   const { prdId } = req.params;
   // const { setCount } = req.body;
   const {
-    body: { setCount },
+    body: { count },
   } = req;
 
-  console.log("setCount", setCount);
+  console.log("count", req.body.count);
+
   console.log("prdId", prdId);
 
   await pool.query(
@@ -190,7 +191,7 @@ app.patch("/amount/:prdId", async (req, res) => {
     UPDATE cart SET amount = ? WHERE prdId = ?
   `,
 
-    [setCount, prdId]
+    [count, prdId]
   );
 
   const [[cartRow]] = await pool.query(
@@ -223,6 +224,20 @@ app.post("/cartList2", async (req, res) => {
 
   res.json(cartRow);
   // console.log("cartRow", cartRow);
+});
+
+app.post("/SumAmount", async (req, res) => {
+  const {
+    body: { userId },
+  } = req;
+
+  const [[amount]] = await pool.query(
+    `
+    SELECT SUM(amount) AS amount FROM cart WHERE userId = ?`,
+    [userId]
+  );
+
+  res.json(amount);
 });
 
 app.patch("/check/:userId/:prdId", async (req, res) => {
