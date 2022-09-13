@@ -141,15 +141,24 @@ app.post("/cart", async (req, res) => {
     [prdId, userId]
   );
 
-  // console.log("duplicate", duplicate);
+  const [[product]] = await pool.query(
+    `
+    SELECT *
+    FROM product
+    WHERE prdId =?
+    `,
+    [prdId]
+  );
+
+  console.log(product.prdPrice);
 
   if (duplicate.length == 0) {
     const [row] = await pool.query(
       `
-    INSERT INTO cart (prdId, userId, checked,amount ) VALUES (?,?, false, 1);
+    INSERT INTO cart (prdId, userId, checked,amount, price ) VALUES (?,?, false, 1, ?);
     
     `,
-      [prdId, userId]
+      [prdId, userId, product.prdPrice]
     );
   } else {
     res.json({
@@ -179,19 +188,19 @@ app.patch("/amount/:prdId", async (req, res) => {
   const { prdId } = req.params;
   // const { setCount } = req.body;
   const {
-    body: { count },
+    body: { count, price },
   } = req;
 
   console.log("count", req.body.count);
 
-  console.log("prdId", prdId);
+  console.log("price", req.body.price);
 
   await pool.query(
     `
-    UPDATE cart SET amount = ? WHERE prdId = ?
+    UPDATE cart SET amount = ?, price = ? WHERE prdId = ?
   `,
 
-    [count, prdId]
+    [count, price, prdId]
   );
 
   const [[cartRow]] = await pool.query(
@@ -226,18 +235,18 @@ app.post("/cartList2", async (req, res) => {
   // console.log("cartRow", cartRow);
 });
 
-app.post("/SumAmount", async (req, res) => {
+app.post("/totalPrice", async (req, res) => {
   const {
     body: { userId },
   } = req;
 
-  const [[amount]] = await pool.query(
+  const [[totalPrice]] = await pool.query(
     `
-    SELECT SUM(amount) AS amount FROM cart WHERE userId = ?`,
+    SELECT SUM(price) AS price FROM cart WHERE userId = ?`,
     [userId]
   );
 
-  res.json(amount);
+  res.json(totalPrice);
 });
 
 app.patch("/check/:userId/:prdId", async (req, res) => {
