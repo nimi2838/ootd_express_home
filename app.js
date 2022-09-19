@@ -55,7 +55,6 @@ app.post("/test1/doLogin", async (req, res) => {
   `,
     [id, pw]
   );
-  // console.log(userRow);
   if (userRow) {
     return res.send(true);
   }
@@ -67,7 +66,6 @@ app.post("/test1", async (req, res) => {
     body: { id, pw, name },
   } = req;
 
-  // console.log(id, pw, name);
   // const { text } = req.body;
 
   const [row] = await pool.query(
@@ -92,9 +90,7 @@ app.post("/prdlist", async (req, res) => {
   const {
     body: { prdno },
   } = req;
-  // console.log("prdno", prdno);
   var like = "%" + prdno + "%";
-  // console.log("like", like);
 
   const [prdRow] = await pool.query(
     `
@@ -106,14 +102,12 @@ app.post("/prdlist", async (req, res) => {
   );
 
   res.json(prdRow);
-  // console.log(prdRow);
 });
 
 app.post("/product", async (req, res) => {
   const {
     body: { prdId },
   } = req;
-  // console.log("prdId", prdId);
 
   const [[prdRow]] = await pool.query(
     `
@@ -149,8 +143,6 @@ app.post("/cart", async (req, res) => {
     `,
     [prdId]
   );
-
-  console.log(product.prdPrice);
 
   if (duplicate.length == 0) {
     const [row] = await pool.query(
@@ -191,10 +183,6 @@ app.patch("/amount/:prdId", async (req, res) => {
     body: { count, price },
   } = req;
 
-  console.log("count", req.body.count);
-
-  console.log("price", req.body.price);
-
   await pool.query(
     `
     UPDATE cart SET amount = ?, price = ? WHERE prdId = ?
@@ -220,8 +208,6 @@ app.post("/cartList2", async (req, res) => {
     body: { prdId },
   } = req;
 
-  // console.log("prdId", prdId);
-
   const [[cartRow]] = await pool.query(
     `
     SELECT *
@@ -232,7 +218,6 @@ app.post("/cartList2", async (req, res) => {
   );
 
   res.json(cartRow);
-  // console.log("cartRow", cartRow);
 });
 
 app.post("/totalPrice", async (req, res) => {
@@ -252,9 +237,6 @@ app.post("/totalPrice", async (req, res) => {
 app.patch("/check/:userId/:prdId", async (req, res) => {
   const { userId, prdId } = req.params;
 
-  console.log("userId", userId);
-
-  console.log("prdId", prdId);
   const [[rows]] = await pool.query(
     `
     SELECT *
@@ -272,6 +254,122 @@ app.patch("/check/:userId/:prdId", async (req, res) => {
     [!rows.checked, userId, prdId]
   );
   res.send(userId);
+});
+
+app.post("/cartDelete", async (req, res) => {
+  const {
+    body: { prdId, userId },
+  } = req;
+
+  const [[cartRow]] = await pool.query(
+    `
+    SELECT *
+    FROM cart
+    WHERE userId = ? and prdId = ?
+    `,
+    [userId, prdId]
+  );
+
+  if (cartRow.length != 0) {
+    await pool.query(
+      `
+    DELETE FROM cart 
+    WHERE userId = ? AND prdId = ?;
+  `,
+
+      [userId, prdId]
+    );
+  }
+
+  const [cartDelete] = await pool.query(
+    `
+    SELECT *
+    FROM cart
+    WHERE userId = ? 
+    `,
+    [userId]
+  );
+  console.log(cartDelete);
+
+  res.json(cartDelete);
+});
+
+app.post("/SearchPage", async (req, res) => {
+  const {
+    body: { search },
+  } = req;
+  var like = "%" + search + "%";
+  const [prdLow] = await pool.query(
+    `
+    SELECT *
+    FROM product
+    WHERE prdName LIKE ?
+    `,
+    [like]
+  );
+  console.log(prdLow);
+  if (search) {
+    res.json(prdLow);
+  }
+});
+
+app.patch("/addHeart", async (req, res) => {
+  const {
+    body: { prdId, userId, checked },
+  } = req;
+
+  const [duplicate] = await pool.query(
+    `
+    SELECT *
+    FROM heart
+    WHERE prdId =? and userId = ?
+    `,
+    [prdId, userId]
+  );
+
+  const [[product]] = await pool.query(
+    `
+    SELECT *
+    FROM product
+    WHERE prdId =?
+    `,
+    [prdId]
+  );
+  console.log(checked);
+
+  if (duplicate.length == 0) {
+    const [row] = await pool.query(
+      `
+    INSERT INTO heart (prdId, userId, checked) VALUES (?,?, ?);
+    
+    `,
+      [prdId, userId, checked]
+    );
+  } else {
+    const [row] = await pool.query(
+      `
+      UPDATE heart SET checked = ? WHERE prdId = ? AND userId = ? 
+    
+    `,
+      [checked, prdId, userId]
+    );
+  }
+});
+
+app.post("/getHeart", async (req, res) => {
+  const {
+    body: { userId },
+  } = req;
+  const [prdLow] = await pool.query(
+    `
+    SELECT *
+    FROM heart
+    WHERE userId = ?
+    `,
+    [userId]
+  );
+
+  res.json(prdLow);
 });
 
 app.listen(port, () => {
