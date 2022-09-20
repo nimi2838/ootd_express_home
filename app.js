@@ -289,7 +289,7 @@ app.post("/cartDelete", async (req, res) => {
     `,
     [userId]
   );
-  console.log(cartDelete);
+  // console.log(cartDelete);
 
   res.json(cartDelete);
 });
@@ -307,7 +307,7 @@ app.post("/SearchPage", async (req, res) => {
     `,
     [like]
   );
-  console.log(prdLow);
+  // console.log(prdLow);
   if (search) {
     res.json(prdLow);
   }
@@ -335,7 +335,6 @@ app.patch("/addHeart", async (req, res) => {
     `,
     [prdId]
   );
-  console.log(checked);
 
   if (duplicate.length == 0) {
     const [row] = await pool.query(
@@ -343,7 +342,7 @@ app.patch("/addHeart", async (req, res) => {
     INSERT INTO heart (prdId, userId, checked) VALUES (?,?, ?);
     
     `,
-      [prdId, userId, checked]
+      [prdId, userId, !checked]
     );
   } else {
     const [row] = await pool.query(
@@ -351,25 +350,26 @@ app.patch("/addHeart", async (req, res) => {
       UPDATE heart SET checked = ? WHERE prdId = ? AND userId = ? 
     
     `,
-      [checked, prdId, userId]
+      [!checked, prdId, userId]
     );
   }
 });
 
 app.post("/getHeart", async (req, res) => {
   const {
-    body: { userId },
+    body: { userId, prdId },
   } = req;
-  const [prdLow] = await pool.query(
+  const [[prdLow]] = await pool.query(
     `
     SELECT *
     FROM heart
-    WHERE userId = ?
+    WHERE userId =? and prdId =?
     `,
-    [userId]
+    [userId, prdId]
   );
 
   res.json(prdLow);
+  console.log(prdLow);
 });
 
 app.listen(port, () => {
