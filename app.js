@@ -369,6 +369,20 @@ app.post("/getHeart", async (req, res) => {
   );
 
   res.json(prdLow);
+});
+
+app.post("/HeartCount", async (req, res) => {
+  const {
+    body: { prdId },
+  } = req;
+  const [[prdLow]] = await pool.query(
+    `
+    SELECT count(checked) as checked FROM heart WHERE prdId = ? AND (checked = 1 OR checked = TRUE);
+    `,
+    [prdId]
+  );
+
+  res.json(prdLow);
   console.log(prdLow);
 });
 
