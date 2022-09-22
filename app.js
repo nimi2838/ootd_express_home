@@ -512,49 +512,54 @@ app.get("/SBP", async (req, res) => {
 //   follow_table 내아이디와 하늘님아이디 삭제.
 // }
 
-app.get("/heart/:userId/:prdId", async (req, res) => {
-  const { userId, prdId } = req.params;
-  console.log("userId : ", userId);
-  console.log("prdId : ", prdId);
-  // const [prdLow] = await pool.query(
-  //   `
-  //   SELECT *
-  //   FROM heart
-  //   WHERE userId =? and prdId = ?
-  //   `,
-  //   [userId, prdId]
-  // );
-  // res.json(prdLow);
-});
-
-app.post("/insertHeart/:userId/:prdId", async (req, res) => {
-  const { userId, prdId } = req.params;
-  const [duplicate] = await pool.query(
+app.post("/heart/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const {
+    body: { prdId },
+  } = req;
+  // console.log("userId : ", userId);
+  // console.log("prdId : ", prdId);
+  const [[prdLow]] = await pool.query(
     `
     SELECT *
     FROM heart
-    WHERE prdId =? and userId = ?
+    WHERE userId =? and prdId = ?
     `,
-    [prdId, userId]
+    [userId, prdId]
   );
-
-  if (duplicate.length != 0) {
-    return;
-  }
-
-  await pool.query(
-    `
-INSERT INTO heart (prdId, userId, checked) VALUES (?,?,0);
-`,
-    [prdId, userId]
-  );
+  res.json(prdLow);
 });
+
+// app.post("/insertHeart/:userId/:prdId", async (req, res) => {
+//   const { userId, prdId } = req.params;
+//   const [duplicate] = await pool.query(
+//     `
+//     SELECT *
+//     FROM heart
+//     WHERE prdId =? and userId = ?
+//     `,
+//     [prdId, userId]
+//   );
+
+//   if (duplicate.length != 0) {
+//     return;
+//   }
+
+//   await pool.query(
+//     `
+// INSERT INTO heart (prdId, userId, checked) VALUES (?,?,0);
+// `,
+//     [prdId, userId]
+//   );
+// });
 
 app.patch("/addHeart/:userId/:prdId", async (req, res) => {
   const { prdId, userId } = req.params;
-  // const {
-  //   body: { check },
-  // } = req;
+  const {
+    body: { checked },
+  } = req;
+
+  // console.log(checked);
 
   const [duplicate] = await pool.query(
     `
@@ -564,7 +569,7 @@ app.patch("/addHeart/:userId/:prdId", async (req, res) => {
     `,
     [prdId, userId]
   );
-  console.log(duplicate);
+  // console.log(duplicate);
 
   if (duplicate.length == 0) {
     await pool.query(
@@ -576,43 +581,42 @@ app.patch("/addHeart/:userId/:prdId", async (req, res) => {
   } else {
     await pool.query(
       `
-      UPDATE heart SET checked = true WHERE prdId = ? AND userId = ?
+      UPDATE heart SET checked = ? WHERE prdId = ? AND userId = ?
     `,
-      [prdId, userId]
+      [checked, prdId, userId]
     );
   }
 });
 
-app.post("/getHeart", async (req, res) => {
-  const {
-    body: { userId, prdId },
-  } = req;
-  const [[prdLow]] = await pool.query(
-    `
-    SELECT *
-    FROM heart
-    WHERE userId =? and prdId =?
-    `,
-    [userId, prdId]
-  );
+// app.post("/getHeart", async (req, res) => {
+//   const {
+//     body: { userId, prdId },
+//   } = req;
+//   const [[prdLow]] = await pool.query(
+//     `
+//     SELECT *
+//     FROM heart
+//     WHERE userId =? and prdId =?
+//     `,
+//     [userId, prdId]
+//   );
 
-  res.json(prdLow);
-});
+//   res.json(prdLow);
+// });
 
 app.post("/HeartCount", async (req, res) => {
   const {
     body: { prdId },
   } = req;
-  // console.log("prdID", prdId);
-  const [[prdLow]] = await pool.query(
+  const [prdLow] = await pool.query(
     `
-    SELECT count(checked) as checked FROM heart WHERE prdId = ? AND (checked = 1 OR checked = TRUE);
+    SELECT * FROM heart WHERE prdId = ? AND (checked = 1 OR checked = TRUE);
     `,
     [prdId]
   );
 
   res.json(prdLow);
-  // console.log(prdLow);
+  console.log(prdLow);
 });
 
 app.listen(port, () => {
