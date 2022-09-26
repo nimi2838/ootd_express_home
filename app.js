@@ -535,7 +535,10 @@ app.post("/heart/:userId", async (req, res) => {
 app.patch("/addHeart/:userId/:prdId", async (req, res) => {
   const { prdId, userId } = req.params;
   const {
-    body: { checked },
+    body: {
+      checked,
+      //  allcount
+    },
   } = req;
 
   // console.log(checked);
@@ -548,7 +551,13 @@ app.patch("/addHeart/:userId/:prdId", async (req, res) => {
     `,
     [prdId, userId]
   );
-  // console.log(duplicate);
+
+  // const [[productCheck]] = await pool.query(
+  //   `SELECT *
+  //   FROM product
+  //   WHERE prdId = ?`,
+  //   [prdId]
+  // );
 
   if (duplicate.length == 0) {
     await pool.query(
@@ -564,7 +573,14 @@ app.patch("/addHeart/:userId/:prdId", async (req, res) => {
     `,
       [checked, prdId, userId]
     );
+    // await pool.query(
+    //   `
+    //   UPDATE product SET checked = 1 WHERE prdId = ?;`,
+    //   [prdId]
+    // );
   }
+
+  // res.json(productCheck);
 });
 
 app.post("/HeartCount", async (req, res) => {
@@ -580,7 +596,7 @@ app.post("/HeartCount", async (req, res) => {
   );
 
   res.json(prdLow);
-  console.log(prdLow);
+  // console.log(prdLow);
 });
 
 app.listen(port, () => {
