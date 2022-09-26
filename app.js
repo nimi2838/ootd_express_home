@@ -497,6 +497,8 @@ app.get("/SBP", async (req, res) => {
   res.json(ItemList);
 });
 
+// ↓↓ 관심상품 데이터 ↓↓
+
 // const {abc} = await pool.query(`
 // select * from follow_table where followid = ? and followedid = ?`,[a,b])
 // if(abc==null){
@@ -529,29 +531,6 @@ app.post("/heart/:userId", async (req, res) => {
   );
   res.json(prdLow);
 });
-
-// app.post("/insertHeart/:userId/:prdId", async (req, res) => {
-//   const { userId, prdId } = req.params;
-//   const [duplicate] = await pool.query(
-//     `
-//     SELECT *
-//     FROM heart
-//     WHERE prdId =? and userId = ?
-//     `,
-//     [prdId, userId]
-//   );
-
-//   if (duplicate.length != 0) {
-//     return;
-//   }
-
-//   await pool.query(
-//     `
-// INSERT INTO heart (prdId, userId, checked) VALUES (?,?,0);
-// `,
-//     [prdId, userId]
-//   );
-// });
 
 app.patch("/addHeart/:userId/:prdId", async (req, res) => {
   const { prdId, userId } = req.params;
@@ -588,26 +567,11 @@ app.patch("/addHeart/:userId/:prdId", async (req, res) => {
   }
 });
 
-// app.post("/getHeart", async (req, res) => {
-//   const {
-//     body: { userId, prdId },
-//   } = req;
-//   const [[prdLow]] = await pool.query(
-//     `
-//     SELECT *
-//     FROM heart
-//     WHERE userId =? and prdId =?
-//     `,
-//     [userId, prdId]
-//   );
-
-//   res.json(prdLow);
-// });
-
 app.post("/HeartCount", async (req, res) => {
   const {
     body: { prdId },
   } = req;
+  console.log(prdId);
   const [prdLow] = await pool.query(
     `
     SELECT * FROM heart WHERE prdId = ? AND (checked = 1 OR checked = TRUE);
@@ -622,5 +586,3 @@ app.post("/HeartCount", async (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
-// ↓↓ 공지사항 데이터 ↓↓
